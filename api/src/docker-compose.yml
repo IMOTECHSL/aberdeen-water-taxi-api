@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  api:
+  
+  nginx:
+
+  mongodb:
+
+
+networks:
+ awt-net
