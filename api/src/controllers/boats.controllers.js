@@ -4,6 +4,8 @@ const schema = require("../validations/schemas/boats/boat.validations");
 //1 -> Get All Boats
 exports.getAllBoats = async (req, res, next) => {
   try {
+  
+   
     const boats = await boatService.getAllBoats();
     return res.status(200).json({ status: "success", data: boats });
   } catch (error) {

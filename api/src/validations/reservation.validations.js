@@ -40,7 +40,8 @@ module.exports.schema = [
     .isDate({ format: "YYYY-MM-DD" })
     .withMessage("Travel Date must be a valid date")
     .custom((input) => {
-      const today = moment().format();
+      const today = moment().format("YYYY-MM-DD");
+
       if (moment(input).isBefore(today)) {
         return false;
       } else {
@@ -52,6 +53,7 @@ module.exports.schema = [
   body("travelType")
     .notEmpty()
     .withMessage("Travel type is required")
+    .default("INBOUND")
     .custom((input) => {
       if (input === "INBOUND" || input === "OUTBOUND") {
         return true;
@@ -61,8 +63,9 @@ module.exports.schema = [
     })
     .withMessage("Invalid Travel Type")
     .trim()
-    .toUpperCase()
-    .default("INBOUND"),
+
+    .toUpperCase(),
+
   body("numberOfAdults")
     .notEmpty()
     .withMessage("Number of Adult(s) is required")
@@ -107,12 +110,13 @@ module.exports.schema = [
     .notEmpty()
     .withMessage("Payment Method is required")
     .custom((input) => {
-      if (input === "ORANGE MONEY" || input === "PAYPAL") {
+      if (input === "ORANGE MONEY" || input === "PAYPAL" || "CASH") {
         return true;
       } else {
         return false;
       }
     })
     .trim()
+    .default("CASH")
     .toUpperCase(),
 ];

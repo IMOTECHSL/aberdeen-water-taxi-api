@@ -1,12 +1,13 @@
 const locationService = require("../services/locations.service");
 const { validationResult } = require("express-validator");
 const { locations } = require("../data/data");
+const mongoose = require("mongoose");
 
 exports.getAllLocations = async (req, res, next) => {
   try {
     const locations = await locationService.getAllLocations();
 
-    return res.status(200).json({ status: "success", data: locations});
+    return res.status(200).json({ status: "success", data: locations });
   } catch (error) {
     return res.sendStatus(500);
   }
@@ -45,11 +46,9 @@ exports.createNewLocation = async (req, res, next) => {
     }
 
     const done = await locationService.createLocation(req.body);
-    return res.status(200).json({ status: "success", data: done });
+    return res.sendStatus(200);
   } catch (error) {
-    return res
-      .status(500)
-      .json({ status: "error", data: "Internal Server Error!!" });
+    return res.sendStauts(500);
   }
 };
 

@@ -1,10 +1,9 @@
 const userService = require("../services/users.service");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-exports.login = (req, res, next) => {
-  //todo log users in
-  const { username, password } = req.body;
-};
+const crypto = require("crypto");
+const { verificationEmail } = require("../utils/mailer.utils");
+
 const { validationResult } = require("express-validator");
 
 exports.registerUser = async (req, res, next) => {
@@ -12,7 +11,6 @@ exports.registerUser = async (req, res, next) => {
     const errors = validationResult(req).array();
 
     if (errors.length) {
-      console.log(errors);
       return res.status(400).json({ status: "BAD REQUEST", data: errors });
     }
 
@@ -54,11 +52,19 @@ exports.registerUser = async (req, res, next) => {
       userType: "customer",
     };
     // save to database
-    const done = await userService.createUser(user);
-
-    res.status(201).json({ status: "CREATED", data: { token: done.token } });
+    userService.createUser(user).then(async (doc) => {
+      console.log(doc);
+      if (user) {
+        //send verification email to the user
+        await verificationEmail(doc);
+        //send response to the user
+        res.sendStatus(201);
+      } else {
+        res.sendStatus(500);
+      }
+    });
   } catch (error) {
-    next(error);
+    console.log(error);
   }
 };
 
@@ -66,7 +72,7 @@ exports.verifyUser = async (req, res, next) => {
   try {
     //get token from url
     let { token } = req.query;
-
+    console.log(token);
     if (
       !Number.isSafeInteger(parseInt(token)) ||
       token.length < 6 ||
@@ -93,6 +99,10 @@ exports.verifyUser = async (req, res, next) => {
   }
 };
 
+exports.authenticate = async (req, res, next) => {
+  res.sendStatus(200);
+};
+
 exports.recoverUserPassword = (req, res, next) => {
   //todo verify users account
 };
@@ -107,7 +117,13 @@ exports.LoginHandler = async (req, res, next) => {
           msg: error.msg,
         };
       });
-      return res.status(400).json({ status: "error", data: errors });
+
+      return res.status(400).json({
+        status: "error",
+        data: {
+          error: errors,
+        },
+      });
     }
 
     //get username and password from user
@@ -122,16 +138,11 @@ exports.LoginHandler = async (req, res, next) => {
 
     //check if user exist, else return a 400 error
     if (!user) {
-      return res
-        .status(400)
-        .json({ status: "error", data: "Account Does Not Exist" });
-    }
-
-    // check if the account has been verified
-    if (user.verifiedAt === null) {
       return res.status(400).json({
         status: "error",
-        message: "Account Not Verified",
+        data: {
+          msg: "Account Does Not Exist",
+        },
       });
     }
 
@@ -140,7 +151,15 @@ exports.LoginHandler = async (req, res, next) => {
     if (!isPasswordValid) {
       return res.status(400).json({
         status: "error",
-        message: "Username or password is incorrect",
+        data: "Username or password is incorrect",
+      });
+    }
+
+    // check if the account has been verified
+    if (user.verifiedAt === null) {
+      return res.status(400).json({
+        status: "error",
+        data: "Account Not Verified",
       });
     }
 
@@ -148,18 +167,19 @@ exports.LoginHandler = async (req, res, next) => {
     const accessToken = jwt.sign(
       {
         sub: user._id,
-        fullname: user.fullname,
-        username: user.username,
+        // fullname: user.fullname,
+        // username: user.username,
         admin: user.userType === "admin" ? true : false,
       },
       process.env.JWT_ACCESS_TOKEN_SECRET,
       {
-        expiresIn: "2d",
+        expiresIn: "1d",
+        //todo add token audience and issuer
       }
     );
 
     //send response to user
-    return res.status(200).json({ status: "success", accessToken });
+    return res.status(200).json({ status: "success", data: accessToken });
   } catch (error) {
     next(error);
   }

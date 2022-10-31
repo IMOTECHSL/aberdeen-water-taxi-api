@@ -91,18 +91,22 @@ let ReservationSchema = new Schema(
       default: "PENDING",
       required: true,
     },
-    qrCode: {
+    // qrCode: {
+    //   type: String,
+    //   required: true,
+    // },
+    orderId: {
       type: String,
-      required: true,
+      default: "",
     },
     paymentMethod: {
       type: String,
       enum: {
-        values: ["ORANGE MONEY", "CREDIT CARD"],
+        values: ["ORANGE MONEY", "CASH"],
         message: "{VALUE} is not supported",
       },
       required: true,
-      default: "ORANGE MONEY",
+      default: "CASH",
     },
     paymentStatus: {
       type: String,
@@ -140,20 +144,5 @@ let ReservationSchema = new Schema(
     timestamps: true,
   }
 );
-
-// ReservationSchema.pre("save", async function (next) {
-
-//   try {
-//     let boat = await Boats.findById({ _id: this.boat });
-//     if (boat) {
-//       console.log(boat);
-//       next();
-//     }
-//     console.log("Boat not found");
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// });
 
 module.exports = mongoose.model("Reservation", ReservationSchema);

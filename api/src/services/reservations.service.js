@@ -1,5 +1,5 @@
 const Reservations = require("../models/reservations.models");
-
+const { getPaymentURL } = require("../utils/payment.utils");
 // 1 --> GET ALL Reservations
 exports.getAllReservations = async () => {
   try {
@@ -33,9 +33,9 @@ exports.getReservationByID = async (reservationId) => {
     throw err;
   }
 };
-exports.getReservationByUser = async (reservationId) => {
+exports.getReservationByUser = async (user) => {
   try {
-    const found = await Reservations.findOne({ _id: reservationId })
+    const found = await Reservations.find({ user: user })
       .populate({ path: "airline", select: "airlineName -_id" })
       .populate({ path: "boat", select: "boatName -_id" })
       .populate({ path: "fromLocation", select: "name -_id" })
@@ -57,6 +57,14 @@ exports.createReservation = async (newReservation) => {
     return await Reservations.create(newReservation);
   } catch (err) {
     throw err;
+  }
+};
+
+exports.getPaymentUrl = async (order) => {
+  try {
+    return await getPaymentURL(order.orderId, order.amount);
+  } catch (error) {
+    throw error;
   }
 };
 

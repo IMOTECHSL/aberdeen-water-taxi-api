@@ -17,12 +17,17 @@ let ReservationDetailsSchema = new Schema(
       type: String,
       required: true,
     },
-    discountTotal: {},
+    discountTotal: {
+      type: Number,
+      default: 0.0,
+    },
     grandTotal: {
-      type: Double,
+      type: Number,
+      default: 0.0,
     },
     couponCode: {
       type: String,
+      default: "",
     },
   },
   {
@@ -30,4 +35,4 @@ let ReservationDetailsSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model("Reservation", ReservationSchema);
+module.exports = mongoose.model("ReservationDetail", ReservationDetailsSchema);
